@@ -1,0 +1,27 @@
+name: polaris-bridge-cli
+on:
+  push:
+    branches: [ main, master, develop, stage, release ]
+  workflow_dispatch:
+jobs:
+  polaris:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Source
+      uses: actions/checkout@v3
+    - name: Polaris Scan
+      env:
+        BRIDGE_POLARIS_SERVERURL: ${{ vars.POLARIS_SERVERURL }}
+        BRIDGE_POLARIS_ACCESSTOKEN: ${{ secrets.POLARIS_ACCESSTOKEN }}
+        BRIDGE_POLARIS_APPLICATION_NAME: br-rel-test
+        BRIDGE_POLARIS_PROJECT_NAME: webgoat8
+        BRIDGE_POLARIS_BRANCH_NAME: dependabot/github_actions/actions/cache-3.3.0
+      run: |
+        curl -fLsS -o bridge.zip ${{ vars.BRIDGECLI_LINUX64 }} && unzip -qo -d $RUNNER_TEMP bridge.zip && rm -f bridge.zip
+        $RUNNER_TEMP/synopsys-bridge --verbose --stage polaris polaris.assessment.types=SAST,SCA
+#    - name: Save Logs
+#      if: always()
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: bridge-logs
+#        path: ${{ github.workspace }}/.bridge
